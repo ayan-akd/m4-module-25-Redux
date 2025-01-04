@@ -32,30 +32,48 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { addTask } from "@/redux/features/task/taskSlice";
+import { editTask } from "@/redux/features/task/taskSlice";
 import { useAppDispatch } from "@/redux/hooks";
 import { ITask } from "@/types";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { format, parse } from "date-fns";
+import { CalendarIcon, Edit } from "lucide-react";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 
-export function AddTaskModal() {
-  const form = useForm();
+interface IProps {
+  task: ITask;
+}
+
+export function EditTaskModal({ task }: IProps) {
+  const form = useForm({
+    defaultValues: {
+      title: task.title,
+      description: task.description,
+      dueDate: task.dueDate
+        ? parse(task.dueDate, "dd-MM-yyyy", new Date()) // Parse the string to a Date object
+        : null,
+      priority: task.priority,
+    },
+  });
   const dispatch = useAppDispatch();
   const onSubmit: SubmitHandler<FieldValues> = (data) => {
-    dispatch(addTask(data as ITask));
+    const taskData = {
+      id: task.id,
+      isCompleted: task.isCompleted,
+      ...data,
+    }
+    dispatch(editTask(taskData as ITask));
   };
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Add Task</Button>
+        <Button variant="ghost" className="text-red-500">
+          <Edit></Edit>
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogDescription className="sr-only">
-          Fill up this form to add task
-        </DialogDescription>
+        <DialogDescription className="sr-only"></DialogDescription>
         <DialogHeader>
-          <DialogTitle>Add Task</DialogTitle>
+          <DialogTitle>Edit Task</DialogTitle>
           <Form {...form}>
             <form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>
               <FormField
@@ -65,11 +83,7 @@ export function AddTaskModal() {
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Title"
-                        value={field.value || ""}
-                      />
+                      <Input {...field} placeholder="Title" />
                     </FormControl>
                   </FormItem>
                 )}
@@ -81,11 +95,7 @@ export function AddTaskModal() {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="Title"
-                        value={field.value || ""}
-                      />
+                      <Textarea {...field} placeholder="Title" />
                     </FormControl>
                   </FormItem>
                 )}
@@ -118,11 +128,9 @@ export function AddTaskModal() {
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
-                          selected={field.value}
+                          selected={field.value || undefined} // Ensure `undefined` is passed instead of `null`
                           onSelect={field.onChange}
-                          disabled={(date) =>
-                            date < new Date() 
-                          }
+                          disabled={(date) => date < new Date()}
                           initialFocus
                         />
                       </PopoverContent>
@@ -157,7 +165,9 @@ export function AddTaskModal() {
               />
 
               <DialogFooter>
-                <Button className="mt-5 mx-auto" type="submit">Add Task</Button>
+                <Button className="mt-5 mx-auto" type="submit">
+                  Save changes
+                </Button>
               </DialogFooter>
             </form>
           </Form>

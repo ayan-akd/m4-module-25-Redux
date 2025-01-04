@@ -1,10 +1,23 @@
 import { cn } from "@/lib/utils";
 import { ITask } from "@/types";
 import { Checkbox } from "./ui/checkbox";
-import { Button } from "./ui/button";
 import { Trash2 } from "lucide-react";
 import { useAppDispatch } from "@/redux/hooks";
-import { deleteTask, toggleCompleteState } from "@/redux/features/task/taskSlice";
+import {
+  deleteTask,
+  toggleCompleteState,
+} from "@/redux/features/task/taskSlice";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./ui/alert-dialog";
+import { EditTaskModal } from "@/module/EditTaskModal";
 
 interface IProps {
   task: ITask;
@@ -29,10 +42,38 @@ export default function TaskCard({ task }: IProps) {
           </h1>
         </div>
         <div className="flex gap-3 items-center">
-          <Button onClick={()=> dispatch(deleteTask(task.id))} variant="ghost" size="icon" className="text-red-500">
-            <Trash2 />
-          </Button>
-          <Checkbox checked={task.isCompleted} onClick={() => dispatch(toggleCompleteState(task.id))} />
+          <div>
+            <AlertDialog>
+              <AlertDialogTrigger>
+                <Trash2 className="text-red-500 size-5" />
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-center">
+                    Are you sure you want to delete this task?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-center">
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="flex gap-3 justify-center">
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => dispatch(deleteTask(task.id))}
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </div>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+          <div>
+            <EditTaskModal task={task} />
+          </div>
+          <Checkbox
+            checked={task.isCompleted}
+            onClick={() => dispatch(toggleCompleteState(task.id))}
+          />
         </div>
       </div>
       <p>{task.description}</p>
