@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { ITask } from "@/types";
 import { Checkbox } from "./ui/checkbox";
 import { Trash2 } from "lucide-react";
-import { useAppDispatch } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   deleteTask,
   toggleCompleteState,
@@ -18,6 +18,7 @@ import {
   AlertDialogTrigger,
 } from "./ui/alert-dialog";
 import { EditTaskModal } from "@/module/EditTaskModal";
+import { selectUsers } from "@/redux/features/user/userSlice";
 
 interface IProps {
   task: ITask;
@@ -25,7 +26,8 @@ interface IProps {
 
 export default function TaskCard({ task }: IProps) {
   const dispatch = useAppDispatch();
-
+  const users = useAppSelector(selectUsers);
+  const assignedUser = users.find((user) => user.id === task.assignTo);
   return (
     <div className="p-5 border-white border rounded-md">
       <div className="flex justify-between items-center">
@@ -77,6 +79,7 @@ export default function TaskCard({ task }: IProps) {
         </div>
       </div>
       <p>{task.description}</p>
+      <p>Assigned To - {assignedUser ? assignedUser.name : "None"}</p>
       <p>{task.dueDate}</p>
     </div>
   );

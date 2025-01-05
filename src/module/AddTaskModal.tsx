@@ -33,26 +33,31 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { addTask } from "@/redux/features/task/taskSlice";
-import { useAppDispatch } from "@/redux/hooks";
+import { selectUsers } from "@/redux/features/user/userSlice";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { ITask } from "@/types";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
+import { useState } from "react";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 
 export function AddTaskModal() {
+  const [isOpen, setIsOpen] = useState(false);
+  const users = useAppSelector(selectUsers);
   const form = useForm();
   const dispatch = useAppDispatch();
   const onSubmit: SubmitHandler<FieldValues> = (data) => {
     dispatch(addTask(data as ITask));
+    setIsOpen(false);
+    form.reset();
   };
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button>Add Task</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogDescription className="sr-only">
-          Fill up this form to add task
         </DialogDescription>
         <DialogHeader>
           <DialogTitle>Add Task</DialogTitle>
@@ -83,7 +88,7 @@ export function AddTaskModal() {
                     <FormControl>
                       <Textarea
                         {...field}
-                        placeholder="Title"
+                        placeholder="Description"
                         value={field.value || ""}
                       />
                     </FormControl>
@@ -120,9 +125,7 @@ export function AddTaskModal() {
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date) =>
-                            date < new Date() 
-                          }
+                          disabled={(date) => date < new Date()}
                           initialFocus
                         />
                       </PopoverContent>
@@ -155,9 +158,37 @@ export function AddTaskModal() {
                   </FormItem>
                 )}
               />
-
+              <FormField
+                control={form.control}
+                name="assignTo"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Assign To</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Priority" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {users.map((user) => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <DialogFooter>
-                <Button className="mt-5 mx-auto" type="submit">Add Task</Button>
+                <Button className="mt-5 mx-auto" type="submit">
+                  Add Task
+                </Button>
               </DialogFooter>
             </form>
           </Form>

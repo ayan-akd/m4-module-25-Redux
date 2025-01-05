@@ -37,6 +37,7 @@ import { useAppDispatch } from "@/redux/hooks";
 import { ITask } from "@/types";
 import { format, parse } from "date-fns";
 import { CalendarIcon, Edit } from "lucide-react";
+import { useState } from "react";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 
 interface IProps {
@@ -44,6 +45,7 @@ interface IProps {
 }
 
 export function EditTaskModal({ task }: IProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const form = useForm({
     defaultValues: {
       title: task.title,
@@ -62,9 +64,11 @@ export function EditTaskModal({ task }: IProps) {
       ...data,
     }
     dispatch(editTask(taskData as ITask));
+    setIsOpen(false);
+    form.reset();
   };
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" className="text-red-500">
           <Edit></Edit>
@@ -95,7 +99,7 @@ export function EditTaskModal({ task }: IProps) {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea {...field} placeholder="Title" />
+                      <Textarea {...field} placeholder="Description" />
                     </FormControl>
                   </FormItem>
                 )}
